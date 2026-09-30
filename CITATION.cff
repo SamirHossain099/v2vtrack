@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use v2vtrack, please cite it as below."
+title: "v2vtrack: online array-offset tracking for position-aided vehicle-to-vehicle beam prediction"
+abstract: >-
+  The position-aided beam map for a vehicle-to-vehicle millimetre-wave link fails across recordings because the
+  receiver's array offset relative to its GPS-derived heading differs by a few degrees between recordings and
+  drifts within one, and because the heading is unobservable at low speed. v2vtrack implements the offset
+  analysis on DeepSense 6G scenarios 36-39, a one-state Kalman tracker fed by sparse beam sweeps or a local
+  sweep that restores the map online without labels, the static-map, beam-hold, offset-tracking, windowed-refit
+  and learned baselines with test-time adaptation and supervised fine-tuning, a continual multi-scenario
+  stream, and a known-truth validation on DeepMIMO v4 in which an applied array rotation is recovered below
+  the beam width.
+type: software
+authors:
+  - given-names: Samir
+    family-names: Hossain
+    orcid: "https://orcid.org/0009-0003-8986-0946"
+    affiliation: "Department of Electrical and Computer Engineering, Texas Tech University"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/SamirHossain099/v2vtrack"
+keywords:
+  - beam tracking
+  - vehicle-to-vehicle
+  - millimeter wave
+  - DeepSense 6G
+  - calibration
+  - distribution shift
+  - Kalman filter
