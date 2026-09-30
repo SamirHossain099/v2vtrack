@@ -44,3 +44,15 @@ def test_no_local_paths_in_results():
         if "N:\\\\" in txt or "N:/" in txt or "C:\\\\Users" in txt:
             bad.append(p.name)
     assert not bad, bad
+
+
+def test_no_em_or_en_dashes_in_released_text():
+    """RESEARCH.md standing rule 1, extended 2026-09-30: nothing that leaves the machine carries an em dash."""
+    bad = []
+    for p in walk():
+        if p.suffix in (".md", ".py", ".cff", ".txt", ".yml", ".toml"):
+            s = p.read_text(encoding="utf-8", errors="replace")
+            for ch in ("\u2014", "\u2013"):
+                if ch in s and f"\\u{ord(ch):04x}" not in s:
+                    bad.append((str(p.relative_to(ROOT)), hex(ord(ch))))
+    assert not bad, bad

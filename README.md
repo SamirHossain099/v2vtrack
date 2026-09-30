@@ -15,13 +15,13 @@ to a ray-traced array is recovered below the beam width.
 
 ## Layout
 
-- `src/v2v/` — `data.py` (scenario index loader), `geo.py` (causal geometry and the codebook map), `track.py`
+- `src/v2v/`: `data.py` (scenario index loader), `geo.py` (causal geometry and the codebook map), `track.py`
   (online methods, `step` / `feedback` protocol), `stream.py` (streaming evaluator and challenge metrics),
   `learned.py` (GPS-sequence network and its online variants)
-- `scripts/` — `e0_challenge_baseline.py` (reproduces the 2023 challenge baseline), `e1*_*.py` (offset origin,
+- `scripts/`: `e0_challenge_baseline.py` (reproduces the 2023 challenge baseline), `e1*_*.py` (offset origin,
   transfer, sensor-lag checks), `e2_tracker.py`, `e3_learned.py`, `e4_known_truth.py`, `e5_continual.py`;
   `unpack_inner.py` (reads the dataset's split inner archives without concatenating them)
-- `results/` — aggregated JSON outputs; `figures/` — figures at 600 dpi and as PDF; `tests/` — every number
+- `results/`: aggregated JSON outputs; `figures/`: figures at 600 dpi and as PDF; `tests/`: every number
   quoted in the paper is read from `results/` by a test
 
 ## Data
