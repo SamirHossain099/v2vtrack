@@ -46,7 +46,7 @@ python src/figures.py
 
 ## Citation
 
-See `CITATION.cff`. Cite DeepSense 6G (Alkhateeb et al., IEEE Communications Magazine, 2023), the
+See `CITATION.cff`. Archived at Zenodo, concept DOI 10.5281/zenodo.23058476 (always the latest release). Cite DeepSense 6G (Alkhateeb et al., IEEE Communications Magazine, 2023), the
 DeepSense-V2V dataset paper (Morais et al., IEEE Transactions on Vehicular Technology, 2025) and DeepMIMO
 (Alkhateeb, ITA 2019) for the data.
 
