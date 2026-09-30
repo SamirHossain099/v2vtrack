@@ -107,7 +107,7 @@ def fig_budget_curve():
     axes[0, 0].set_ylabel("top-1")
     axes[1, 0].set_ylabel("average power loss (dB)")
     h, l = axes[0, 0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.12), fontsize=7)
+    fig.legend(h, l, loc="upper center", ncol=3, bbox_to_anchor=(0.5, 0.0), fontsize=7)
     save(fig, "fig_budget_curve")
 
 
@@ -123,9 +123,11 @@ def fig_recovery():
             ax.plot(range(4), y, color=c, linestyle=ls, marker=mk, label=LABEL[m])
         ax.set_xticks(range(4)); ax.set_xticklabels(["0-10 s", "10-30 s", "30-60 s", "> 60 s"])
         ax.set_title(f"into {SCEN_NAME[e5['order'][visit]]}", fontsize=8)
-        ax.set_xlabel("time since the switch")
+        if visit == 2:
+            ax.set_xlabel("time since the switch")
     axes[0].set_ylabel("top-1")
-    axes[0].legend(fontsize=6.5, loc="upper left")
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", ncol=4, bbox_to_anchor=(0.5, -0.04), fontsize=7)  # below the axis label, off the data
     save(fig, "fig_recovery")
 
 
@@ -152,7 +154,7 @@ def fig_known_truth():
     ax.step(t, tr["truth_deg"], where="post", color="#52514e", linewidth=1.0, label="applied rotation")
     ax.plot(t, tr["est_deg"], color=PALETTE["blue"], linewidth=1.0, label="tracked (sweep every 5 s)")
     ax.set_xlabel("time (s)"); ax.set_ylabel("rotation (deg)")
-    ax.legend(fontsize=6.5)
+    ax.legend(fontsize=6.5, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2)  # above the axes, off the data
     save(fig, "fig_known_truth")
 
 
