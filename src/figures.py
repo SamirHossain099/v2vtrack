@@ -5,6 +5,7 @@ black-and-white print. Palette: the validated categorical set from the dataviz r
 yellow, magenta, violet), assigned in fixed order per entity, never by rank.
 """
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -158,7 +159,60 @@ def fig_known_truth():
     save(fig, "fig_known_truth")
 
 
+def fig_letter_offsets():
+    e6 = json.loads((RES / "e6_letter_offsets.json").read_text())
+    fig, axes = plt.subplots(1, 4, figsize=(3.5, 1.5), sharey=True)
+    for ax, (k, v) in zip(axes, sorted(e6["scenarios"].items())):
+        offs = np.array(v["offsets_deg"])
+        ax.plot(np.arange(len(offs)), offs, color=PALETTE["blue"], marker="o", markersize=1.4, linewidth=0.6)
+        ax.axhline(v["whole_deg"], color="#52514e", linewidth=0.7, linestyle="--")
+        ax.set_title(k, fontsize=7)
+        ax.tick_params(labelsize=6)
+    axes[0].set_ylabel("offset (deg)", fontsize=7)
+    fig.supxlabel("pass (time order)", fontsize=7, y=-0.12)
+    save(fig, "fig_letter_offsets")
+
+
+def fig_letter_budget():
+    runs = json.loads((RES / "e2_tracker_letter_nolabelK_nolag.json").read_text())["runs"]
+    fig, axes = plt.subplots(2, 3, figsize=(3.5, 2.9), sharex=True)
+    for col, scen in enumerate((37, 38, 39)):
+        for m in ("beam-hold", "index-offset-ma", "robust-window", "kalman"):
+            for L, filled in ((0, True), (2, False)):
+                pts = sorted((runs[k]["meas_per_frame"], runs[k]["top1"], runs[k]["apl_db"])
+                             for S in (10, 20, 50, 100, 200, 500) if (k := f"{scen}|{m}|S{S}|L{L}") in runs)
+                if L == 2 and f"{scen}|{m}|S0|L2" in runs:
+                    k = f"{scen}|{m}|S0|L2"
+                    pts = sorted(pts + [(runs[k]["meas_per_frame"], runs[k]["top1"], runs[k]["apl_db"])])
+                if not pts:
+                    continue
+                x, y1, y2 = zip(*pts)
+                c, ls, mk = STYLE[m]
+                kw = dict(color=c, linestyle=ls, marker=mk, markersize=2.5, linewidth=0.9, markerfacecolor=c if filled else "white",
+                          markeredgecolor=c, label=f"{LABEL[m]}{'' if L == 0 else ' + local'}")
+                axes[0, col].plot(x, y1, **kw)
+                axes[1, col].plot(x, y2, **kw)
+        st = runs[f"{scen}|static|S0|L0"]
+        for row, key in ((0, "top1"), (1, "apl_db")):
+            axes[row, col].axhline(st[key], color=STYLE["static"][0], linestyle=STYLE["static"][1], linewidth=0.8,
+                                   label=LABEL["static"] if col == 0 and row == 0 else None)
+            axes[row, col].set_xscale("log")
+            axes[row, col].tick_params(labelsize=6)
+        axes[0, col].set_title(str(scen), fontsize=7)
+    axes[0, 0].set_ylabel("top-1", fontsize=7)
+    axes[1, 0].set_ylabel("power loss (dB)", fontsize=7)
+    axes[1, 1].set_xlabel("beam measurements per frame", fontsize=7)
+    h, l = axes[0, 0].get_legend_handles_labels()
+    fig.subplots_adjust(wspace=0.55, hspace=0.3)
+    fig.legend(h, l, loc="upper center", ncol=3, bbox_to_anchor=(0.5, 0.0), fontsize=5.5)
+    save(fig, "fig_letter_budget")
+
+
 if __name__ == "__main__":
-    for f in (fig_boresight_per_sequence, fig_transfer_matrix, fig_budget_curve, fig_recovery, fig_lag_histogram, fig_known_truth):
+    which = sys.argv[1:]
+    for f in (fig_boresight_per_sequence, fig_transfer_matrix, fig_budget_curve, fig_recovery, fig_lag_histogram, fig_known_truth,
+              fig_letter_offsets, fig_letter_budget):
+        if which and f.__name__ not in which:
+            continue
         f()
         print("done", f.__name__)

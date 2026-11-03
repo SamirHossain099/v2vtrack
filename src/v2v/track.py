@@ -89,7 +89,8 @@ class KalmanDelta(Method):
         self.P = np.radians(P0_deg) ** 2
         self.sig_pos, self.use_local = sigma_pos_m, use_local
         self.hold_still, self.hold_max = hold_still, hold_max_frames
-        self.agree_local = kw.get("agree_local", 3)
+        self.agree_local = kw.get("agree_local", 3)          # None disables the agreement gate (ablation)
+        self.require_interior = kw.get("require_interior", True)  # False uses edge maxima too (ablation)
         self.t_last, self.last_obs, self.last_obs_i = None, None, None
 
     def step(self, i, f):
@@ -107,13 +108,13 @@ class KalmanDelta(Method):
         self.t_last = t
         obs = fb.get("sweep_beam")
         is_local = False
-        if obs is None and self.use_local and fb.get("local_interior", False):
+        if obs is None and self.use_local and fb.get("local_best") is not None and (fb.get("local_interior", False) or not self.require_interior):
             obs, is_local = fb.get("local_best"), True
         if obs is not None:
             self.last_obs, self.last_obs_i = int(obs), i
         if obs is None or not f["moving"][i]:
             return
-        if is_local:
+        if is_local and self.agree_local is not None:
             # a local maximum only measures the rotation if it was found near where the map looks; one found
             # around a held beam that has wandered onto a reflection would drag the rotation with it
             m0 = int(rank_beams(f["phi"][i], self.delta, self.K)[0][0])

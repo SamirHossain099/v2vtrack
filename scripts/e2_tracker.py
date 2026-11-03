@@ -33,11 +33,24 @@ def main():
     ap.add_argument("--local", type=int, nargs="+", default=[0, 2])
     ap.add_argument("--methods", nargs="+", default=list(METHODS))
     ap.add_argument("--tag", default="")
+    ap.add_argument("--K", type=float, default=None, help="override the codebook slope (default: joint fit from E1d)")
     a = ap.parse_args()
     e1 = json.loads((OUT / "e1d_final.json").read_text())
-    K = e1["K_joint"]
+    K = e1["K_joint"] if a.K is None else a.K
     lags = {int(k): v for k, v in e1["lag_frames"].items()}
     delta0 = np.radians(e1["scenarios"][str(a.source)]["boresight_deg"][0])
+    if a.K is not None:
+        # with an overridden slope, refit the source offset under that slope, on the source recording only
+        from scipy.optimize import least_squares
+        from v2v.geo import C_CENTRE, wrap as _wrap
+        s0 = load(a.source)
+        if not a.no_lag:
+            s0 = apply_lag(s0, lags[a.source])
+        f0 = causal_features(s0)
+        m = f0["valid"] & f0["moving"] & (s0["array"] == 0)
+        r = least_squares(lambda d: C_CENTRE + K * np.sin(_wrap(d[0] - f0["phi"][m])) - s0["beam_in"][m], [delta0],
+                          loss="soft_l1", f_scale=3.0)
+        delta0 = float(r.x[0])
     tag = a.tag or f"src{a.source}_h{a.horizon}{'_nolag' if a.no_lag else ''}"
     res = {"K": K, "delta0_deg": float(np.degrees(delta0)), "source": a.source, "horizon": a.horizon, "lag": not a.no_lag, "runs": {}}
     for scen in a.targets:

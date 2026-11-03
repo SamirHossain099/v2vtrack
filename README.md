@@ -13,6 +13,11 @@ windowed refit, a learned GPS-sequence network with test-time adaptation and sup
 continual multi-scenario stream, and a known-truth validation on DeepMIMO v4 in which a rotation applied
 to a ray-traced array is recovered below the beam width.
 
+Since v0.2.0 the evaluation can run with no target information at all: `--K 40.107` takes the codebook slope from
+the array specification, `--no-lag` applies no timing correction, and the source offset is refitted on the source
+recording only. `e6_letter_offsets.py` measures the effective offset per pass, and `e7_ablation.py` removes the
+tracker's rules one at a time.
+
 ## Layout
 
 - `src/v2v/`: `data.py` (scenario index loader), `geo.py` (causal geometry and the codebook map), `track.py`
@@ -40,6 +45,9 @@ python scripts/e1d_final.py
 python scripts/e2_tracker.py
 python scripts/e4_known_truth.py
 python scripts/e5_continual.py
+python scripts/e2_tracker.py --no-lag --K 40.107 --targets 36 37 38 39 --tag letter_nolabelK_nolag
+python scripts/e6_letter_offsets.py
+python scripts/e7_ablation.py
 python -m pytest tests -q
 python src/figures.py
 ```
