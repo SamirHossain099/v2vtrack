@@ -91,6 +91,7 @@ class KalmanDelta(Method):
         self.hold_still, self.hold_max = hold_still, hold_max_frames
         self.agree_local = kw.get("agree_local", 3)          # None disables the agreement gate (ablation)
         self.require_interior = kw.get("require_interior", True)  # False uses edge maxima too (ablation)
+        self.reject = np.radians(kw.get("reject_deg", 20.0))      # a larger innovation is not taken as a rotation
         self.t_last, self.last_obs, self.last_obs_i = None, None, None
 
     def step(self, i, f):
@@ -123,7 +124,7 @@ class KalmanDelta(Method):
         z = float(delta_from_beam(f["phi"][i], int(obs), self.K))
         r = (1.0 / self.K) ** 2 + (self.sig_pos / max(f["range"][i], 1.0)) ** 2
         y = wrap(z - self.delta)
-        if abs(y) > np.radians(20):  # a reflection or a wrong-array sweep, not a rotation
+        if abs(y) > self.reject:  # a reflection or a wrong-array sweep, not a rotation
             return
         g = self.P / (self.P + r)
         self.delta = float(wrap(self.delta + g * y))

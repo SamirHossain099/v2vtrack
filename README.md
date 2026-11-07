@@ -15,8 +15,8 @@ to a ray-traced array is recovered below the beam width.
 
 Since v0.2.0 the evaluation can run with no target information at all: `--K 40.107` takes the codebook slope from
 the array specification, `--no-lag` applies no timing correction, and the source offset is refitted on the source
-recording only. `e6_letter_offsets.py` measures the effective offset per pass, and `e7_ablation.py` removes the
-tracker's rules one at a time.
+recording only. `e6_letter_offsets.py` measures the effective offset per pass, `e7_ablation.py` removes the
+tracker's rules one at a time, and `e8_sensitivity.py` halves and doubles every hand-set value at two budgets.
 
 ## Layout
 
@@ -48,6 +48,7 @@ python scripts/e5_continual.py
 python scripts/e2_tracker.py --no-lag --K 40.107 --targets 36 37 38 39 --tag letter_nolabelK_nolag
 python scripts/e6_letter_offsets.py
 python scripts/e7_ablation.py
+python scripts/e8_sensitivity.py
 python -m pytest tests -q
 python src/figures.py
 ```

@@ -62,8 +62,38 @@ def test_the_conceded_regime_is_real(e2):
         bh, k = e2["runs"][f"{scen}|beam-hold|S500|L2"], e2["runs"][f"{scen}|kalman|S500|L2"]
         assert bh["top1"] >= k["top1"] - 0.01
         assert bh["apl_db"] < k["apl_db"] - 1.0
-    for scen in (38, 39):
-        assert top1(e2, scen, "beam-hold|S20|L2") > top1(e2, scen, "kalman|S20|L2")
+    for scen in (37, 38, 39):
+        bh, k = e2["runs"][f"{scen}|beam-hold|S20|L2"], e2["runs"][f"{scen}|kalman|S20|L2"]
+        assert bh["top1"] > k["top1"] and bh["apl_db"] > k["apl_db"]
+
+
+def test_table_one_is_matched_every_method_has_every_budget(e2):
+    for scen in (37, 38, 39):
+        for m in ("beam-hold", "index-offset-ma", "robust-window", "kalman"):
+            for b in ("S100|L0", "S0|L2", "S500|L2", "S20|L0", "S20|L2"):
+                assert f"{scen}|{m}|{b}" in e2["runs"]
+
+
+def test_sensitivity_base_is_the_letter_run_and_the_bound_is_as_stated(e2):
+    e8 = json.loads((RES / "e8_sensitivity.json").read_text())
+    runs = e8["runs"]
+    for scen in (36, 37, 38, 39):
+        assert runs[f"{scen}|L2|base"]["top1"] == pytest.approx(e2["runs"][f"{scen}|kalman|S0|L2"]["top1"])
+        assert runs[f"{scen}|S100|base"]["top1"] == pytest.approx(e2["runs"][f"{scen}|kalman|S100|L0"]["top1"])
+    # every hand-set value was moved both ways on every stream; the search width at L2 only
+    assert set(e8["base"]) == {"v_min", "back", "sigma", "q", "local_k", "hold_max", "reject_deg", "P0"}
+    assert len(runs) == 4 * ((1 + 2 * 8) + (1 + 2 * 7))
+    base = lambda k: runs["|".join(k.split("|")[:2]) + "|base"]
+    keys = [k for k in runs if k[:2] in ("37", "38", "39") and "base" not in k and "local_k" not in k]
+    moved = sorted(((runs[k]["top1"] - base(k)["top1"]) * 100, k) for k in keys)
+    assert moved[-1][1] == "38|L2|v_min=4.0" and 7 < moved[-1][0] < 8     # the largest move, and it is upward
+    assert sorted(abs(m[0]) for m in moved)[-2] < 4
+    assert max(abs(runs[k]["apl_db"] - base(k)["apl_db"]) for k in keys) < 1.1
+    # the gate cannot fire at L2, and fires at S100: that is why the sweep has two budgets
+    assert all(runs[f"{s}|L2|reject_deg={v}"]["top1"] == runs[f"{s}|L2|base"]["top1"] for s in (37, 38, 39) for v in (10.0, 40.0))
+    assert any(runs[f"{s}|S100|reject_deg={v}"]["top1"] != runs[f"{s}|S100|base"]["top1"] for s in (37, 38, 39) for v in (10.0, 40.0))
+    # a wider search is not free on the source
+    assert runs["36|L2|local_k=3"]["top1"] < runs["36|L2|base"]["top1"] - 0.03
 
 
 
